@@ -2,7 +2,8 @@ import os
 import base64
 import json
 from typing import Optional, Union
-from openai import OpenAI
+from openai import OpenAI, AsyncOpenAI
+import asyncio
 from dotenv import load_dotenv
 from .models import ReceiptData
 from .prompts import TAX_HACKER_SYSTEM_PROMPT, TAX_HACKER_USER_PROMPT
@@ -29,6 +30,7 @@ class TaxHackerSkill:
             raise ValueError("未提供 API Key。请设置环境变量 OPENAI_API_KEY 或在初始化时传入。")
             
         self.client = OpenAI(api_key=self.api_key, base_url=self.base_url)
+        self.aclient = AsyncOpenAI(api_key=self.api_key, base_url=self.base_url)
 
     def _encode_image(self, image_path: str) -> str:
         """将图片文件编码为 Base64 字符串"""
@@ -37,6 +39,10 @@ class TaxHackerSkill:
             
         with open(image_path, "rb") as image_file:
             return base64.b64encode(image_file.read()).decode("utf-8")
+
+    async def _aencode_image(self, image_path: str) -> str:
+        """异步版本的图片编码 (使用 asyncio.to_thread 避免阻塞事件循环)"""
+        return await asyncio.to_thread(self._encode_image, image_path)
 
     def extract_receipt_data(self, image_path: str, model: str = "gpt-4o-mini") -> ReceiptData:
         """
@@ -94,8 +100,51 @@ class TaxHackerSkill:
 
     async def aextract_receipt_data(self, image_path: str, model: str = "gpt-4o-mini") -> ReceiptData:
         """异步版本的提取函数 (适用于 FastAPI 等异步框架)"""
-        # 这里为了演示，简单复用同步调用，实际生产中可使用 AsyncOpenAI
-        return self.extract_receipt_data(image_path, model)
+        # 1. 编码图片 (使用异步版本)
+        base64_image = await self._aencode_image(image_path)
+        
+        # 2. 调用 LLM (使用 AsyncOpenAI)
+        try:
+            response = await self.aclient.chat.completions.create(
+                model=model,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": TAX_HACKER_SYSTEM_PROMPT
+                    },
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": TAX_HACKER_USER_PROMPT},
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/jpeg;base64,{base64_image}"
+                                }
+                            }
+                        ]
+                    }
+                ],
+                response_format={"type": "json_object"}
+            )
+        except Exception as e:
+            raise RuntimeError(f"调用 AI 服务失败: {str(e)}")
+        
+        # 3. 解析结果
+        content = response.choices[0].message.content
+        if not content:
+            raise ValueError("AI 返回内容为空。")
+            
+        try:
+            data = json.loads(content)
+        except json.JSONDecodeError:
+            raise ValueError(f"AI 返回的 JSON 格式错误: {content}")
+        
+        # 4. 验证并返回 Pydantic 模型
+        try:
+            return ReceiptData(**data)
+        except Exception as e:
+            raise ValueError(f"数据模型验证失败: {str(e)}")
 
 # 简易调用接口 (供 Agent 框架使用)
 def run_tax_hacker_skill(file_path: str) -> str:
