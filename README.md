@@ -2,7 +2,7 @@
  * @Author: 嘛的叭卡 xxxxxy_112@163.com
  * @Date: 2026-04-08 15:48:37
  * @LastEditors: 嘛的叭卡 xxxxxy_112@163.com
- * @LastEditTime: 2026-04-08 15:59:26
+ * @LastEditTime: 2026-04-08 16:39:36
  * @FilePath: \skill\README.md
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
 -->
@@ -46,21 +46,26 @@ pip install -r tax_hacker_skill/requirements.txt
 在项目根目录下创建 `.env` 文件，或者直接在终端设置：
 
 ```bash
-# 必填：您的 OpenAI 或兼容平台的 API Key
+# 方式 A: 标准 OpenAI 变量
 OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxx
+OPENAI_BASE_URL=https://api.openai.com/v1
+OPENAI_MODEL_NAME=gpt-4o-mini
 
-# 可选：如果您使用的是代理或第三方平台（如 DeepSeek, 智谱 AI）
-# OPENAI_BASE_URL=https://api.openai.com/v1
+# 方式 B: OpenClaw 框架自动适配 (推荐)
+# 如果您在 OpenClaw 中使用，可以设置以下变量，Skill 会自动读取：
+OPENCLAW_LLM_API_KEY=sk-xxxxxxxxxxxxxxxxxxxx
+OPENCLAW_LLM_BASE_URL=https://api.openai.com/v1
+OPENCLAW_LLM_MODEL=gpt-4o-mini
 ```
 
 ### 3. 基本用法
 
+#### 🐍 Python 调用
+
 ```python
 from tax_hacker_skill import TaxHackerSkill
-```,old_str:,old_str:python
-from tax_hacker_skill import TaxHackerSkill
 
-# 初始化技能
+# 初始化技能 (会自动读取环境变量)
 skill = TaxHackerSkill()
 
 # 提取收据数据 (支持 jpg, png, webp 等图片格式)
@@ -75,23 +80,36 @@ except Exception as e:
     print(f"解析出错: {e}")
 ```
 
-## 🤖 在 OpenClaw 中使用
+#### 💻 命令行 (CLI) 调用
 
-本 Skill 已适配 **OpenClaw** AI Agent 框架。
+```bash
+# 基本用法
+python -m tax_hacker_skill.skill "path/to/receipt.jpg"
 
-### 1. 安装方法
+# 指定 API 参数 (会覆盖环境变量)
+python -m tax_hacker_skill.skill "path/to/receipt.jpg" --api-key "YOUR_KEY" --model "gpt-4o"
+```
+
+## 🤖 在 OpenClaw 中集成
+
+本 Skill 已深度适配 **OpenClaw** AI Agent 框架。
+
+### 1. 无需手动配置 API Key
+如果您的 OpenClaw 已经配置了模型（环境变量中包含 `OPENCLAW_LLM_API_KEY` 等），本 Skill 在安装后会**自动继承**这些配置，无需您再次手动填写 `.env` 或 `api_key`。
+
+### 2. 安装方法
 将 `tax_hacker_skill` 文件夹复制到 OpenClaw 的技能目录中：
 - 个人全局目录：`~/.openclaw/skills/tax_hacker_skill`
 - 工作区目录：`<your-workspace>/skills/tax_hacker_skill`
 
-### 2. 依赖安装
+### 3. 依赖安装
 在 OpenClaw 运行的环境中安装必要的依赖：
 ```bash
 pip install -r tax_hacker_skill/requirements.txt
 ```
 
-### 3. 配置
-确保已设置环境变量 `OPENAI_API_KEY`。OpenClaw 在启动时会自动扫描 `SKILL.md` 并将其注册为可用技能。
+### 4. 自动注册
+OpenClaw 在启动时会自动扫描 `SKILL.md` 并将其注册为可用技能。您可以直接在 OpenClaw 界面或对话中调用。
 
 ---
 ## 🛠️ 数据模型说明
