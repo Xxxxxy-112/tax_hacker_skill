@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from skill import TaxHackerSkill
+from tax_hacker_skill import TaxHackerSkill
 
 # 加载 .env 环境变量 (可选，建议手动设置或在 shell 环境中配置)
 load_dotenv()

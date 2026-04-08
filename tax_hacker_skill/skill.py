@@ -5,8 +5,8 @@ from typing import Optional, Union
 from openai import OpenAI, AsyncOpenAI
 import asyncio
 from dotenv import load_dotenv
-from models import ReceiptData
-from prompts import TAX_HACKER_SYSTEM_PROMPT, TAX_HACKER_USER_PROMPT
+from .models import ReceiptData
+from .prompts import TAX_HACKER_SYSTEM_PROMPT, TAX_HACKER_USER_PROMPT
 
 class TaxHackerSkill:
     """
