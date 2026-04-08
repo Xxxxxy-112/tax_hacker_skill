@@ -1,0 +1,5 @@
+openai>=1.0.0
+pydantic>=2.0.0
+python-dotenv
+# 可选: 用于 PDF 处理 (如果后续扩展)
+# PyMuPDF
