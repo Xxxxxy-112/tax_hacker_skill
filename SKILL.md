@@ -13,7 +13,11 @@ This skill is optimized for OpenClaw. If you have configured a model in OpenClaw
 
 Otherwise, you can provide parameters directly via CLI:
 ```bash
-python -m tax_hacker_skill.skill "<file_path>" --api-key "YOUR_KEY" --base-url "https://api.openai.com/v1" --model "gpt-4o-mini"
+# Vision Mode (Default)
+python -m tax_hacker_skill.skill "<file_path>" --api-key "YOUR_KEY" --model "gpt-4o-mini"
+
+# Local OCR Mode (Saves tokens, no image upload)
+python -m tax_hacker_skill.skill "<file_path>" --local-ocr
 ```
 
 ## Parameters
@@ -21,6 +25,7 @@ python -m tax_hacker_skill.skill "<file_path>" --api-key "YOUR_KEY" --base-url "
 - `--api-key`: (Optional) Override API Key.
 - `--base-url`: (Optional) Override API Base URL.
 - `--model`: (Optional) Override LLM Model.
+- `--local-ocr`: (Optional) Use local OCR instead of vision. Requires `easyocr` installed.
 
 ## Instructions
 1. Ensure the user has provided an image file path.

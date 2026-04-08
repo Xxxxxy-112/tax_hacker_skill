@@ -1,11 +1,11 @@
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, patch, AsyncMock
 import json
 import os
 from tax_hacker_skill.skill import TaxHackerSkill, run_tax_hacker_skill
 from tax_hacker_skill.models import ReceiptData
 
-class TestTaxHackerSkill(unittest.TestCase):
+class TestTaxHackerSkill(unittest.IsolatedAsyncioTestCase):
 
     def setUp(self):
         os.environ["OPENAI_API_KEY"] = "test-key"
@@ -89,6 +89,69 @@ class TestTaxHackerSkill(unittest.TestCase):
         data = json.loads(output)
         self.assertIn("error", data)
         self.assertIn("收据文件不存在", data["error"])
+
+    @patch('tax_hacker_skill.skill.os.path.exists')
+    @patch('tax_hacker_skill.skill.load_dotenv')
+    @patch('tax_hacker_skill.skill.OpenAI')
+    @patch('tax_hacker_skill.skill.TaxHackerSkill._perform_local_ocr')
+    def test_extract_receipt_data_local_ocr(self, mock_ocr, mock_openai, mock_dotenv, mock_exists):
+        mock_exists.return_value = True
+        mock_ocr.return_value = "Test Store\n2024-01-01\n100.0\nCNY"
+        
+        skill = TaxHackerSkill()
+        
+        # 模拟 OpenAI 响应
+        mock_response = MagicMock()
+        mock_response.choices = [
+            MagicMock(message=MagicMock(content=json.dumps({
+                "vendor": "Test Store",
+                "total_amount": 100.0,
+                "currency": "CNY",
+                "items": [],
+                "summary": "OCR Result"
+            })))
+        ]
+        skill.client.chat.completions.create.return_value = mock_response
+        
+        result = skill.extract_receipt_data("fake_path.jpg", use_local_ocr=True)
+        
+        self.assertEqual(result.vendor, "Test Store")
+        mock_ocr.assert_called_once_with("fake_path.jpg")
+        # 验证调用时 payload 是否包含 OCR 文本，而不是 image_url
+        args, kwargs = skill.client.chat.completions.create.call_args
+        messages = kwargs['messages']
+        user_content = messages[1]['content']
+        self.assertEqual(user_content[0]['type'], 'text')
+        self.assertIn("OCR 识别出的文本内容", user_content[0]['text'])
+
+    @patch('tax_hacker_skill.skill.os.path.exists')
+    @patch('tax_hacker_skill.skill.load_dotenv')
+    @patch('tax_hacker_skill.skill.AsyncOpenAI')
+    @patch('tax_hacker_skill.skill.TaxHackerSkill._aperform_local_ocr')
+    async def test_aextract_receipt_data_local_ocr(self, mock_aocr, mock_aopenai, mock_dotenv, mock_exists):
+        mock_exists.return_value = True
+        mock_aocr.return_value = "Test Store\n2024-01-01\n100.0\nCNY"
+        
+        skill = TaxHackerSkill()
+        
+        # 模拟 AsyncOpenAI 响应
+        mock_response = MagicMock()
+        mock_response.choices = [
+            MagicMock(message=MagicMock(content=json.dumps({
+                "vendor": "Test Store",
+                "total_amount": 100.0,
+                "currency": "CNY",
+                "items": [],
+                "summary": "OCR Result"
+            })))
+        ]
+        # 注意: AsyncOpenAI 的 create 方法是异步的
+        skill.aclient.chat.completions.create = AsyncMock(return_value=mock_response)
+        
+        result = await skill.aextract_receipt_data("fake_path.jpg", use_local_ocr=True)
+        
+        self.assertEqual(result.vendor, "Test Store")
+        mock_aocr.assert_called_once_with("fake_path.jpg")
 
 if __name__ == '__main__':
     unittest.main()

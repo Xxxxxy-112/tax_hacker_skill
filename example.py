@@ -27,25 +27,30 @@ def main():
 
     try:
         # 4. 调用核心提取逻辑 (使用 gpt-4o-mini 以平衡速度与成本)
-        print(f"正在分析 {receipt_image}...")
+        print(f"正在分析 {receipt_image} (Vision 模式)...")
         data = skill.extract_receipt_data(receipt_image, model="gpt-4o-mini")
 
         # 5. 打印结果
-        print("\n=== 提取成功 ===")
+        print("\n=== Vision 提取成功 ===")
         print(f"商家: {data.vendor}")
-        print(f"日期: {data.date}")
         print(f"总金额: {data.total_amount} {data.currency}")
-        print(f"税额: {data.tax_amount}")
         print(f"分类: {data.category}")
-        print(f"摘要: {data.summary}")
-        print(f"风险评估: {data.risk_level}")
         
-        print("\n--- 详细清单 ---")
-        for item in data.items:
-            print(f"- {item.name}: {item.price} x {item.quantity}")
+        # 6. (可选) 演示本地 OCR 模式 (更省 Token，不上传图片)
+        print(f"\n正在尝试本地 OCR 模式 (不上传图片)...")
+        # 提示：需要安装 easyocr (pip install easyocr torch torchvision)
+        try:
+            data_ocr = skill.extract_receipt_data(receipt_image, use_local_ocr=True)
+            print("=== 本地 OCR 提取成功 ===")
+            print(f"商家: {data_ocr.vendor}")
+            print(f"总金额: {data_ocr.total_amount} {data_ocr.currency}")
+        except ImportError as e:
+            print(f"跳过本地 OCR 演示: {e}")
+        except Exception as e:
+            print(f"本地 OCR 模式提取失败: {e}")
 
     except Exception as e:
-        print(f"提取失败: {e}")
+        print(f"Vision 提取失败: {e}")
 
 if __name__ == "__main__":
     main()
