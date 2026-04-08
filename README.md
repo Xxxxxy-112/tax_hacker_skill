@@ -21,13 +21,13 @@
 ## 📂 项目结构
 
 ```text
-tax_hacker_skill/
+.
 ├── __init__.py          # 包导出接口
 ├── models.py            # Pydantic 数据模型定义
 ├── prompts.py           # 优化的 AI 提示词模板
 ├── skill.py             # 核心逻辑类 TaxHackerSkill
-└── requirements.txt     # 项目依赖列表
-example.py               # 快速入门使用示例
+├── requirements.txt     # 项目依赖列表
+└── example.py           # 快速入门使用示例
 ```
 
 ## 🚀 快速开始
@@ -37,7 +37,7 @@ example.py               # 快速入门使用示例
 确保您的 Python 环境版本 >= 3.9。
 
 ```bash
-pip install -r tax_hacker_skill/requirements.txt
+pip install -r requirements.txt
 ```
 
 ### 2. 配置环境变量
@@ -55,6 +55,8 @@ OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxx
 ### 3. 基本用法
 
 ```python
+from skill import TaxHackerSkill
+```,old_str:python
 from tax_hacker_skill import TaxHackerSkill
 
 # 初始化技能
@@ -77,14 +79,14 @@ except Exception as e:
 本 Skill 已适配 **OpenClaw** AI Agent 框架。
 
 ### 1. 安装方法
-将 `tax_hacker_skill` 文件夹复制到 OpenClaw 的技能目录中：
+将项目文件夹复制到 OpenClaw 的技能目录中：
 - 个人全局目录：`~/.openclaw/skills/tax_hacker_skill`
 - 工作区目录：`<your-workspace>/skills/tax_hacker_skill`
 
 ### 2. 依赖安装
 在 OpenClaw 运行的环境中安装必要的依赖：
 ```bash
-pip install -r tax_hacker_skill/requirements.txt
+pip install -r requirements.txt
 ```
 
 ### 3. 配置

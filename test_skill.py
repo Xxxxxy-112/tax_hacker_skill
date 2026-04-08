@@ -2,24 +2,24 @@ import unittest
 from unittest.mock import MagicMock, patch
 import json
 import os
-from tax_hacker_skill.skill import TaxHackerSkill, run_tax_hacker_skill
-from tax_hacker_skill.models import ReceiptData
+from skill import TaxHackerSkill, run_tax_hacker_skill
+from models import ReceiptData
 
 class TestTaxHackerSkill(unittest.TestCase):
 
     def setUp(self):
         os.environ["OPENAI_API_KEY"] = "test-key"
 
-    @patch('tax_hacker_skill.skill.OpenAI')
-    @patch('tax_hacker_skill.skill.load_dotenv')
+    @patch('skill.OpenAI')
+    @patch('skill.load_dotenv')
     def test_init_no_api_key(self, mock_dotenv, mock_openai):
         with patch.dict(os.environ, {}, clear=True):
             with self.assertRaises(ValueError):
                 TaxHackerSkill()
 
-    @patch('tax_hacker_skill.skill.OpenAI')
-    @patch('tax_hacker_skill.skill.load_dotenv')
-    @patch('tax_hacker_skill.skill.os.path.exists')
+    @patch('skill.OpenAI')
+    @patch('skill.load_dotenv')
+    @patch('skill.os.path.exists')
     @patch('builtins.open', unittest.mock.mock_open(read_data=b"fake-image-data"))
     def test_extract_receipt_data_success(self, mock_exists, mock_dotenv, mock_openai):
         mock_exists.return_value = True
@@ -46,18 +46,18 @@ class TestTaxHackerSkill(unittest.TestCase):
         self.assertIsInstance(result, ReceiptData)
         self.assertEqual(result.vendor, "Test Store")
 
-    @patch('tax_hacker_skill.skill.os.path.exists')
-    @patch('tax_hacker_skill.skill.load_dotenv')
-    @patch('tax_hacker_skill.skill.OpenAI')
+    @patch('skill.os.path.exists')
+    @patch('skill.load_dotenv')
+    @patch('skill.OpenAI')
     def test_extract_receipt_data_file_not_found(self, mock_openai, mock_dotenv, mock_exists):
         mock_exists.return_value = False
         skill = TaxHackerSkill()
         with self.assertRaises(FileNotFoundError):
             skill.extract_receipt_data("non_existent.jpg")
 
-    @patch('tax_hacker_skill.skill.OpenAI')
-    @patch('tax_hacker_skill.skill.load_dotenv')
-    @patch('tax_hacker_skill.skill.os.path.exists')
+    @patch('skill.OpenAI')
+    @patch('skill.load_dotenv')
+    @patch('skill.os.path.exists')
     @patch('builtins.open', unittest.mock.mock_open(read_data=b"fake-image-data"))
     def test_run_tax_hacker_skill_success(self, mock_exists, mock_dotenv, mock_openai):
         mock_exists.return_value = True
@@ -81,8 +81,8 @@ class TestTaxHackerSkill(unittest.TestCase):
         data = json.loads(output)
         self.assertEqual(data["vendor"], "Test Store")
 
-    @patch('tax_hacker_skill.skill.os.path.exists')
-    @patch('tax_hacker_skill.skill.load_dotenv')
+    @patch('skill.os.path.exists')
+    @patch('skill.load_dotenv')
     def test_run_tax_hacker_skill_error(self, mock_dotenv, mock_exists):
         mock_exists.return_value = False
         output = run_tax_hacker_skill("non_existent.jpg")
