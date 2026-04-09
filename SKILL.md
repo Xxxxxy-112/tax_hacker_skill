@@ -18,6 +18,9 @@ python -m tax_hacker_skill.skill "<file_path>" --api-key "YOUR_KEY" --model "gpt
 
 # Local OCR Mode (Saves tokens, no image upload)
 python -m tax_hacker_skill.skill "<file_path>" --local-ocr
+
+# Local OCR Mode with CnOCR
+python -m tax_hacker_skill.skill "<file_path>" --local-ocr --ocr-engine cnocr
 ```
 
 ## Parameters
@@ -25,7 +28,8 @@ python -m tax_hacker_skill.skill "<file_path>" --local-ocr
 - `--api-key`: (Optional) Override API Key.
 - `--base-url`: (Optional) Override API Base URL.
 - `--model`: (Optional) Override LLM Model.
-- `--local-ocr`: (Optional) Use local OCR instead of vision. Requires `easyocr` installed.
+- `--local-ocr`: (Optional) Use local OCR instead of vision.
+- `--ocr-engine`: (Optional) OCR engine: `auto`, `easyocr`, `cnocr`.
 
 ## Instructions
 1. Ensure the user has provided an image file path.

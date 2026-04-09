@@ -1,0 +1,68 @@
+name: tax_hacker_skill
+description: Extract structured financial data from receipt/invoice images and PDFs using AI.
+version: "1.0.0"
+entry_point: "tax_hacker_skill.skill:run_tax_hacker_skill"
+
+inputs:
+  - name: file_path
+    type: string
+    description: Absolute path to the receipt/invoice file (jpg, png, webp, pdf).
+    required: true
+  - name: api_key
+    type: string
+    description: Override API Key.
+    required: false
+  - name: base_url
+    type: string
+    description: Override API Base URL.
+    required: false
+  - name: model
+    type: string
+    description: Override LLM Model.
+    required: false
+  - name: use_local_ocr
+    type: boolean
+    description: Use local OCR instead of vision.
+    required: false
+  - name: ocr_engine
+    type: string
+    description: OCR engine to use (auto, easyocr, cnocr).
+    required: false
+
+outputs:
+  - name: invoice_code
+    type: string
+  - name: invoice_number
+    type: string
+  - name: date
+    type: string
+  - name: amount
+    type: number
+  - name: tax_amount
+    type: number
+  - name: check_code
+    type: string
+  - name: vendor
+    type: string
+  - name: purchaser
+    type: string
+  - name: currency
+    type: string
+  - name: items
+    type: array
+  - name: category
+    type: string
+  - name: summary
+    type: string
+  - name: risk_level
+    type: string
+
+dependencies:
+  - "openai>=1.0.0"
+  - "pydantic>=2.0.0"
+  - "python-dotenv"
+  - "cnocr"
+  - "easyocr"
+  - "torch"
+  - "torchvision"
+  - "PyMuPDF"
